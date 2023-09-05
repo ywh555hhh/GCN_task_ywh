@@ -1,4 +1,5 @@
 #include <math.h>
+#include <omp.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -6,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 using namespace std;
@@ -16,8 +18,10 @@ int v_num = 0;
 int e_num = 0;
 int F0 = 0, F1 = 0, F2 = 0;
 
-vector<int> row_ptr, col_indices;
-vector<float> weights;
+vector<vector<int>> edge_index;
+vector<vector<float>> edge_val;
+vector<int> degree;
+vector<int> raw_graph;
 
 float *X0, *W1, *W2, *X1, *X1_inter, *X2, *X2_inter;
 
@@ -29,14 +33,68 @@ void readGraph(char *fname) {
 
   infile >> v_num >> e_num;
 
+  // raw_graph.resize(e_num * 2);
+
   while (!infile.eof()) {
     infile >> source >> end;
     if (infile.peek() == EOF) break;
-    col_indices.push_back(source);
-    weights.push_back(1.0);
-    row_ptr.push_back(end);
+    raw_graph.push_back(source);
+    raw_graph.push_back(end);
   }
-  row_ptr.push_back(col_indices.size()); // Terminating row_ptr with size of col_indices
+}
+
+void raw_graph_to_CSR(vector<int>& row_ptr, vector<int>& col_indices, vector<float>& weights) {
+    row_ptr.resize(v_num + 1, 0);
+    int num_edges = raw_graph.size() / 2;
+    col_indices.reserve(num_edges);
+    weights.reserve(num_edges);
+
+    for (int i = 0; i < num_edges; i++) {
+        int src = raw_graph[2 * i];
+        int dst = raw_graph[2 * i + 1];
+        col_indices.push_back(src);
+        weights.push_back(1.0 / sqrt(degree[dst]) / sqrt(degree[src]));
+        row_ptr[dst + 1]++;
+    }
+
+    for (int i = 1; i <= v_num; i++) {
+        row_ptr[i] += row_ptr[i - 1];
+    }
+}
+
+void raw_graph_to_AdjacencyList() {
+  int src;
+  int dst;
+
+  edge_index.resize(v_num);
+  edge_val.resize(v_num);
+  degree.resize(v_num, 0);
+
+  for (int i = 0; i < raw_graph.size() / 2; i++) {
+    src = raw_graph[2 * i];
+    dst = raw_graph[2 * i + 1];
+    edge_index[dst].push_back(src);
+    degree[src]++;
+  }
+}
+
+void edgeNormalization(const vector<int>& row_ptr, const vector<int>& col_indices, const vector<float>& weights) {
+    for (int i = 0; i < v_num; i++) {
+        for (int j = row_ptr[i]; j < row_ptr[i + 1]; j++) {
+            int src = col_indices[j];
+            edge_val[i].push_back(weights[j]);
+        }
+    }
+}
+
+
+void edgeNormalization() {
+  for (int i = 0; i < v_num; i++) {
+    for (int j = 0; j < edge_index[i].size(); j++) {
+      float val = 1 / sqrt(degree[i]) / sqrt(degree[edge_index[i][j]]);
+      edge_val[i].push_back(val);
+    }
+  }
 }
 
 void readFloat(char *fname, float *&dst, int num) {
@@ -52,9 +110,9 @@ void initFloat(float *&dst, int num) {
 }
 
 void XW(int in_dim, int out_dim, float *in_X, float *out_X, float *W) {
-  float (*tmp_in_X)[in_dim] = (float(*)[in_dim])in_X;
-  float (*tmp_out_X)[out_dim] = (float(*)[out_dim])out_X;
-  float (*tmp_W)[out_dim] = (float(*)[out_dim])W;
+  float(*tmp_in_X)[in_dim] = (float(*)[in_dim])in_X;
+  float(*tmp_out_X)[out_dim] = (float(*)[out_dim])out_X;
+  float(*tmp_W)[out_dim] = (float(*)[out_dim])W;
 
   for (int i = 0; i < v_num; i++) {
     for (int j = 0; j < out_dim; j++) {
@@ -66,14 +124,15 @@ void XW(int in_dim, int out_dim, float *in_X, float *out_X, float *W) {
 }
 
 void AX(int dim, float *in_X, float *out_X) {
-  float (*tmp_in_X)[dim] = (float(*)[dim])in_X;
-  float (*tmp_out_X)[dim] = (float(*)[dim])out_X;
+  float(*tmp_in_X)[dim] = (float(*)[dim])in_X;
+  float(*tmp_out_X)[dim] = (float(*)[dim])out_X;
 
   for (int i = 0; i < v_num; i++) {
-    for (int j = row_ptr[i]; j < row_ptr[i + 1]; j++) {
-      int nbr = col_indices[j];
+    vector<int> &nlist = edge_index[i];
+    for (int j = 0; j < nlist.size(); j++) {
+      int nbr = nlist[j];
       for (int k = 0; k < dim; k++) {
-        tmp_out_X[i][k] += tmp_in_X[nbr][k] * weights[j];
+        tmp_out_X[i][k] += tmp_in_X[nbr][k] * edge_val[i][j];
       }
     }
   }
@@ -85,7 +144,7 @@ void ReLU(int dim, float *X) {
 }
 
 void LogSoftmax(int dim, float *X) {
-  float (*tmp_X)[dim] = (float(*)[dim])X;
+  float(*tmp_X)[dim] = (float(*)[dim])X;
 
   for (int i = 0; i < v_num; i++) {
     float max = tmp_X[i][0];
@@ -106,7 +165,7 @@ void LogSoftmax(int dim, float *X) {
 }
 
 float MaxRowSum(float *X, int dim) {
-  float (*tmp_X)[dim] = (float(*)[dim])X;
+  float(*tmp_X)[dim] = (float(*)[dim])X;
   float max = -__FLT_MAX__;
 
   for (int i = 0; i < v_num; i++) {
@@ -129,6 +188,20 @@ void freeFloats() {
   free(X2_inter);
 }
 
+void somePreprocessing() {
+  // The graph  will be transformed into adjacency list, you can use other data
+  // structure such as CSR
+    raw_graph_to_AdjacencyList();
+
+    vector<int> row_ptr, col_indices;
+    vector<float> weights;
+    raw_graph_to_CSR(row_ptr, col_indices, weights);
+    edge_val.resize(v_num);
+    // Normalize edges
+    edgeNormalization(row_ptr, col_indices, weights);
+
+}
+
 int main(int argc, char **argv) {
   // Do NOT count the time of reading files, malloc, and memset
   F0 = atoi(argv[1]);
@@ -147,6 +220,12 @@ int main(int argc, char **argv) {
 
   // Time point at the start of the computation
   TimePoint start = chrono::steady_clock::now();
+
+  // Preprocessing time should be included
+
+  somePreprocessing();
+
+  edgeNormalization();
 
   // printf("Layer1 XW\n");
   XW(F0, F1, X0, X1_inter, W1);
@@ -182,4 +261,3 @@ int main(int argc, char **argv) {
   // Remember to free your allocated memory
   freeFloats();
 }
-
