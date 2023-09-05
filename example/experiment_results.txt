@@ -1,5 +1,28 @@
 Timestamp: 2023-09-03 16:01:44
-Program Name: run_baseline
+Infomation: run_baseline
 
 Average Score: 8.82
+
+Timestamp: 2023-09-04 17:14:36
+Infomation: Opt_CSR
+
+Average Score: 5.13
+
+Timestamp: 2023-09-05 08:40:00
+Infomation: Opt_CSR_01
+
+Average Score: 5.36
+
+Timestamp: 2023-09-05 08:40:45
+Infomation: Opt_CSR_01
+
+Average Score: 5.44
+
+Timestamp: 2023-09-05 08:54:44
+Infomation: Opt_CSR_01
+
+Timestamp: 2023-09-05 08:55:51
+Infomation: Opt_CSR
+
+Average Score: 5.39
 

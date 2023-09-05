@@ -15,10 +15,10 @@ for i in range(iterations):
     if i == 0:
         with open(output_file, file_mode) as file:
             file.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            file.write(f"Program Name: run_baseline\n\n")
+            file.write(f"Infomation: Opt_CSR\n\n")
 
     # 运行程序并捕获输出
-    result = subprocess.getoutput('./run_baseline.sh')
+    result = subprocess.getoutput('./run.sh')
 
     # 按行分割结果
     lines = result.split('\n')

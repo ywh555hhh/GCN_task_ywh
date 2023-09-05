@@ -43,25 +43,6 @@ void readGraph(char *fname) {
   }
 }
 
-void raw_graph_to_CSR(vector<int>& row_ptr, vector<int>& col_indices, vector<float>& weights) {
-    row_ptr.resize(v_num + 1, 0);
-    int num_edges = raw_graph.size() / 2;
-    col_indices.reserve(num_edges);
-    weights.reserve(num_edges);
-
-    for (int i = 0; i < num_edges; i++) {
-        int src = raw_graph[2 * i];
-        int dst = raw_graph[2 * i + 1];
-        col_indices.push_back(src);
-        weights.push_back(1.0 / sqrt(degree[dst]) / sqrt(degree[src]));
-        row_ptr[dst + 1]++;
-    }
-
-    for (int i = 1; i <= v_num; i++) {
-        row_ptr[i] += row_ptr[i - 1];
-    }
-}
-
 void raw_graph_to_AdjacencyList() {
   int src;
   int dst;
@@ -77,16 +58,6 @@ void raw_graph_to_AdjacencyList() {
     degree[src]++;
   }
 }
-
-void edgeNormalization(const vector<int>& row_ptr, const vector<int>& col_indices, const vector<float>& weights) {
-    for (int i = 0; i < v_num; i++) {
-        for (int j = row_ptr[i]; j < row_ptr[i + 1]; j++) {
-            int src = col_indices[j];
-            edge_val[i].push_back(weights[j]);
-        }
-    }
-}
-
 
 void edgeNormalization() {
   for (int i = 0; i < v_num; i++) {
@@ -191,15 +162,7 @@ void freeFloats() {
 void somePreprocessing() {
   // The graph  will be transformed into adjacency list, you can use other data
   // structure such as CSR
-    raw_graph_to_AdjacencyList();
-
-    vector<int> row_ptr, col_indices;
-    vector<float> weights;
-    raw_graph_to_CSR(row_ptr, col_indices, weights);
-    edge_val.resize(v_num);
-    // Normalize edges
-    edgeNormalization(row_ptr, col_indices, weights);
-
+  raw_graph_to_AdjacencyList();
 }
 
 int main(int argc, char **argv) {
