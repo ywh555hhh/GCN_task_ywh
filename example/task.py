@@ -15,7 +15,7 @@ for i in range(iterations):
     if i == 0:
         with open(output_file, file_mode) as file:
             file.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            file.write(f"Infomation: this is new baseline \n\n")
+            file.write(f"Infomation: try to use complier opt  \n\n")
 
     # 运行程序并捕获输出
     result = subprocess.getoutput('./run.sh')
