@@ -1,0 +1,36 @@
+1024 20000
+Timestamp: 2023-09-06 19:59:12
+Infomation: try to use complier opt 03 
+
+Average Score: 15.44
+
+Timestamp: 2023-09-06 20:01:07
+Infomation: try to use complier opt 03 
+
+Average Score: 2.79
+
+Timestamp: 2023-09-06 20:02:01
+Infomation: try to use complier opt 03 
+
+Average Score: 14.71
+
+Timestamp: 2023-09-06 20:02:30
+Infomation: try to use complier opt 03 
+
+Average Score: 13.49
+
+Timestamp: 2023-09-06 20:03:03
+Infomation: try to use complier opt 03 
+
+Average Score: 14.78
+
+Timestamp: 2023-09-06 20:03:51
+Infomation: try to use complier opt 03 
+
+Average Score: 14.97
+
+Timestamp: 2023-09-06 20:04:24
+Infomation: try to use complier opt 03 
+
+Average Score: 2.30
+

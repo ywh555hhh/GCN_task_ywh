@@ -49,7 +49,7 @@ Average Score: 5.04
 
 
 old___________________________________________
-new
+
 
 
 
@@ -67,4 +67,42 @@ Timestamp: 2023-09-05 16:28:31
 Infomation: try to use complier opt 03 
 
 Average Score: 0.90
+
+----------------------------------------------------------------------------------------------
+
+final 
+
+Timestamp: 2023-09-06 19:32:28
+Infomation: baseline 
+
+Average Score: 9.05
+
+Timestamp: 2023-09-06 19:33:58
+Infomation: complier opt
+Average Score: 1.63
+
+Timestamp: 2023-09-06 19:35:23
+Infomation: openmp 
+
+Average Score: 8.92
+
+Timestamp: 2023-09-06 19:36:08
+Infomation: data iot 
+
+Average Score: 8.46
+
+Timestamp: 2023-09-06 19:37:21
+Infomation: openblas
+
+Average Score: 9.08
+
+Timestamp: 2023-09-06 19:38:02
+Infomation: give up ad list
+
+Average Score: 8.87
+
+Timestamp: 2023-09-06 19:38:36
+Infomation: final
+
+Average Score: 1.62
 
