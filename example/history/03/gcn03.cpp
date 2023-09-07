@@ -45,20 +45,27 @@ void readGraph(char *fname) {
 }
 
 void raw_graph_to_AdjacencyList() {
-  int src;
-  int dst;
+    edge_index.resize(v_num);
+    edge_val.resize(v_num);
+    degree.resize(v_num, 0);
 
-  edge_index.resize(v_num);
-  edge_val.resize(v_num);
-  degree.resize(v_num, 0);
+    edge_index.reserve(e_num);
+    edge_val.reserve(e_num);
 
-  for (int i = 0; i < raw_graph.size() / 2; i++) {
-    src = raw_graph[2 * i];
-    dst = raw_graph[2 * i + 1];
-    edge_index[dst].push_back(src);
-    degree[src]++;
-  }
+    for (auto it = raw_graph.begin(); it != raw_graph.end(); it += 2) {
+        int src = *it;
+        int dst = *(it + 1);
+
+#pragma omp parallel for
+        for (int i = 0; i < 2; i++) {
+            edge_index[dst].push_back(src);
+
+#pragma omp atomic
+            degree[src]++;
+        }
+    }
 }
+
 
 void edgeNormalization() {
     for (int i = 0; i < v_num; i++) {
