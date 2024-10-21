@@ -15,3 +15,5 @@ Linux：CentOs7
 内存 4.6GB
 
 root密码 ywh123.6
+
+### 我很需要 yolo 徽章
